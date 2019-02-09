@@ -12,6 +12,7 @@ import picamera # http://picamera.readthedocs.org/en/release-1.4/install2.html
 import atexit
 import sys
 import socket
+import squid
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE
 import pytumblr # https://github.com/tumblr/pytumblr
@@ -21,8 +22,10 @@ from signal import alarm, signal, SIGALRM, SIGKILL
 ########################
 ### Variables Config ###
 ########################
-led_pin = 7 # LED 
-btn_pin = 18 # pin for the start button
+led_red_pin = 18 # Red RGB LED
+led_green_pin = 23 # Green RGB LED
+led_blue_pin = 24 # Blue RGB LED
+btn_pin = 25 # pin for the start button
 
 total_pics = 4 # number of pics to be taken
 capture_delay = 1 # delay between pics
@@ -63,9 +66,10 @@ client = pytumblr.TumblrRestClient(
 
 # GPIO setup
 GPIO.setmode(GPIO.BOARD)
-GPIO.setup(led_pin,GPIO.OUT) # LED
+# GPIO.setup(led_pin,GPIO.OUT) # LED
 GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.output(led_pin,False) #for some reason the pin turns on at the beginning of the program. Why?
+# GPIO.output(led_pin,False) #for some reason the pin turns on at the beginning of the program. Why?
+rgb = squid.Squid(18, 23, 24)
 
 # initialize pygame
 pygame.init()
@@ -99,11 +103,11 @@ def clear_pics(channel):
 	for f in files:
 		os.remove(f) 
 	#light the lights in series to show completed
-	print "Deleted previous pics"
+	print("Deleted previous pics")
 	for x in range(0, 3): #blink light
-		GPIO.output(led_pin,True); 
+		rgb.set_color(RED)
 		sleep(0.25)
-		GPIO.output(led_pin,False);
+		rgb.set_color(OFF)
 		sleep(0.25)
 
 # check if connected to the internet   
@@ -196,8 +200,8 @@ def start_photobooth():
 
 	################################# Begin Step 1 #################################
 	
-	print "Get Ready"
-	GPIO.output(led_pin,False);
+	print("Get Ready")
+	rgb.set_color(OFF)
 	show_image(real_path + "/instructions.png")
 	sleep(prep_delay)
 	
@@ -207,7 +211,7 @@ def start_photobooth():
 	camera = picamera.PiCamera()  
 	camera.vflip = False
 	camera.hflip = True # flip for preview, showing users a mirror image
-	camera.saturation = -100 # comment out this line if you want color images
+#	camera.saturation = -100 # comment out this line if you want color images
 	camera.iso = config.camera_iso
 	
 	pixel_width = 0 # local variable declaration
@@ -222,7 +226,7 @@ def start_photobooth():
 		
 	################################# Begin Step 2 #################################
 	
-	print "Taking pics"
+	print("Taking pics")
 	
 	now = time.strftime("%Y-%m-%d-%H-%M-%S") #get the current date and time for the start of the filename
 	
@@ -232,12 +236,12 @@ def start_photobooth():
 				camera.hflip = True # preview a mirror image
 				camera.start_preview(resolution=(config.monitor_w, config.monitor_h)) # start preview at low res but the right ratio
 				time.sleep(2) #warm up camera
-				GPIO.output(led_pin,True) #turn on the LED
+				rgb.set_color(GREEN) #turn on the LED
 				filename = config.file_path + now + '-0' + str(i) + '.jpg'
 				camera.hflip = False # flip back when taking photo
 				camera.capture(filename)
 				print(filename)
-				GPIO.output(led_pin,False) #turn off the LED
+				rgb.set_color(OFF) #turn off the LED
 				camera.stop_preview()
 				show_image(real_path + "/pose" + str(i) + ".png")
 				time.sleep(capture_delay) # pause in-between shots
@@ -252,10 +256,10 @@ def start_photobooth():
 		
 		try: #take the photos
 			for i, filename in enumerate(camera.capture_continuous(config.file_path + now + '-' + '{counter:02d}.jpg')):
-				GPIO.output(led_pin,True) #turn on the LED
+				rgb.set_color(GREEN) #turn on the LED
 				print(filename)
 				time.sleep(capture_delay) # pause in-between shots
-				GPIO.output(led_pin,False) #turn off the LED
+				rgb.set_color(OFF) #turn off the LED
 				if i == total_pics-1:
 					break
 		finally:
@@ -291,7 +295,7 @@ def start_photobooth():
 		connected = is_connected() #check to see if you have an internet connection
 
 		if (connected==False):
-			print "bad internet connection"
+			print("bad internet connection")
                     
 		while connected:
 			if config.make_gifs: 
@@ -300,7 +304,7 @@ def start_photobooth():
 					client.create_photo(config.tumblr_blog, state="published", tags=[config.tagsForTumblr], data=file_to_upload)
 					break
 				except ValueError:
-					print "Oops. No internect connection. Upload later."
+					print("Oops. No internect connection. Upload later.")
 					try: #make a text file as a note to upload the .gif later
 						file = open(config.file_path + now + "-FILENOTUPLOADED.txt",'w')   # Trying to create a new file or open one
 						file.close()
@@ -316,7 +320,7 @@ def start_photobooth():
 					client.create_photo(config.tumblr_blog, state="published", tags=[config.tagsForTumblr], format="markdown", data=myJpgs)
 					break
 				except ValueError:
-					print "Oops. No internect connection. Upload later."
+					print("Oops. No internect connection. Upload later.")
 					try: #make a text file as a note to upload the .gif later
 						file = open(config.file_path + now + "-FILENOTUPLOADED.txt",'w')   # Trying to create a new file or open one
 						file.close()
@@ -335,7 +339,7 @@ def start_photobooth():
 		traceback.print_exception(e.__class__, e, tb)
 		pygame.quit()
 		
-	print "Done"
+	print("Done")
 	
 	if config.post_online:
 		show_image(real_path + "/finished.png")
@@ -344,7 +348,7 @@ def start_photobooth():
 	
 	time.sleep(restart_delay)
 	show_image(real_path + "/intro.png");
-	GPIO.output(led_pin,True) #turn on the LED
+	rgb.set_color(BLUE) #turn on the LED
 
 ####################
 ### Main Program ###
@@ -356,15 +360,15 @@ if config.clear_on_startup:
 
 print "Photo booth app running..." 
 for x in range(0, 5): #blink light to show the app is running
-	GPIO.output(led_pin,True)
+	rgb.set_color(PURPLE)
 	sleep(0.25)
-	GPIO.output(led_pin,False)
+	rgb.set_color(OFF)
 	sleep(0.25)
 
 show_image(real_path + "/intro.png");
 
 while True:
-	GPIO.output(led_pin,True); #turn on the light showing users they can push the button
+	rgb.set_color(CYAN); #turn on the light showing users they can push the button
 	input(pygame.event.get()) # press escape to exit pygame. Then press ctrl-c to exit python.
 	GPIO.wait_for_edge(btn_pin, GPIO.FALLING)
 	time.sleep(config.debounce) #debounce

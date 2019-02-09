@@ -212,7 +212,8 @@ def start_photobooth():
 	camera.vflip = False
 	camera.hflip = True # flip for preview, showing users a mirror image
 #	camera.saturation = -100 # comment out this line if you want color images
-	camera.iso = config.camera_iso
+#	camera.iso = config.camera_iso
+	camera.exposure_mode = 'auto'
 	
 	pixel_width = 0 # local variable declaration
 	pixel_height = 0 # local variable declaration

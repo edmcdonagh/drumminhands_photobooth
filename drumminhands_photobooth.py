@@ -31,7 +31,7 @@ total_pics = 4 # number of pics to be taken
 capture_delay = 1 # delay between pics
 prep_delay = 5 # number of seconds at step 1 as users prep to have photo taken
 gif_delay = 100 # How much time between frames in the animated gif
-restart_delay = 10 # how long to display finished message before beginning a new session
+restart_delay = 5 # how long to display finished message before beginning a new session
 test_server = 'www.google.com'
 
 # full frame of v1 camera is 2592x1944. Wide screen max is 2592,1555

@@ -342,7 +342,7 @@ def start_photobooth():
 	print("Done")
 	
 	if config.post_online:
-		show_image(real_path + "/finished.png")
+		show_image(real_path + "/finished2.png")
 	else:
 		show_image(real_path + "/finished2.png")
 	

@@ -65,11 +65,11 @@ client = pytumblr.TumblrRestClient(
 )
 
 # GPIO setup
-GPIO.setmode(GPIO.BOARD)
+GPIO.setmode(GPIO.BCM)
 # GPIO.setup(led_pin,GPIO.OUT) # LED
 GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # GPIO.output(led_pin,False) #for some reason the pin turns on at the beginning of the program. Why?
-rgb = squid.Squid(18, 23, 24)
+rgb = squid.Squid(led_red_pin, led_green_pin, led_blue_pin)
 
 # initialize pygame
 pygame.init()

@@ -12,7 +12,7 @@ import picamera # http://picamera.readthedocs.org/en/release-1.4/install2.html
 import atexit
 import sys
 import socket
-import squid
+from squid import *
 import pygame
 from pygame.locals import QUIT, KEYDOWN, K_ESCAPE
 import pytumblr # https://github.com/tumblr/pytumblr
@@ -69,7 +69,7 @@ GPIO.setmode(GPIO.BCM)
 # GPIO.setup(led_pin,GPIO.OUT) # LED
 GPIO.setup(btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 # GPIO.output(led_pin,False) #for some reason the pin turns on at the beginning of the program. Why?
-rgb = squid.Squid(led_red_pin, led_green_pin, led_blue_pin)
+rgb = Squid(led_red_pin, led_green_pin, led_blue_pin)
 
 # initialize pygame
 pygame.init()
